@@ -1,0 +1,1263 @@
+# PROJECT: MULTI-TENANT EVENT & TICKET RESERVATION SYSTEM
+
+Act as a senior full-stack software engineer, database architect, UI/UX designer, security engineer, and QA engineer.
+
+Build a complete, functional, production-oriented web application called **EventSphere — Multi-Tenant Event & Ticket Reservation System**.
+
+Do not create only a landing page, static prototype, or frontend demonstration. Build a working full-stack application with authentication, database persistence, role-based authorization, event management, ticket reservations, concurrency-safe inventory management, simulated asynchronous payments, organizer analytics, and automated reservation expiration.
+
+Follow every requirement below. Make sensible technical decisions without repeatedly asking me questions.
+
+==================================================
+1. TECHNOLOGY STACK
+==================================================
+
+Use the following technology stack:
+
+Frontend:
+- React.js
+- TypeScript
+- Vite, if supported by the generated environment
+- Tailwind CSS
+- Lucide React icons
+- Recharts for analytics charts
+- React Router for navigation
+
+Backend:
+- Node.js
+- Express.js
+- TypeScript
+- REST API architecture
+- Zod for request validation
+
+Database:
+- PostgreSQL
+- Prisma ORM
+- Database migrations
+- Proper foreign keys, indexes, unique constraints, and transactions
+
+Caching and background jobs:
+- Redis for caching event details
+- BullMQ for background jobs when supported by the deployment environment
+- A persistent worker process for processing expired reservation holds
+
+Authentication:
+- Secure password hashing using Argon2 or bcrypt
+- Server-side session authentication or secure JWT authentication
+- HttpOnly, Secure, SameSite cookies where appropriate
+- Role-Based Access Control
+
+Testing:
+- Vitest
+- Supertest
+- Playwright for end-to-end testing where supported
+
+API documentation:
+- OpenAPI/Swagger
+- Postman collection
+
+Deployment:
+- Prepare the frontend and backend for deployment.
+- Support managed PostgreSQL and Redis services.
+- Provide environment variable examples and deployment instructions.
+
+IMPORTANT IMPLEMENTATION RULE:
+
+Do not replace the required backend, database, Redis caching, or concurrency controls with localStorage, hardcoded arrays, simulated database responses, or frontend-only logic.
+
+If a required external service is unavailable in the current environment, implement the actual integration code and provide clear setup instructions. Never falsely claim that an external service is connected or that an operation succeeded when it did not.
+
+If the environment cannot run a separate backend or worker, create the complete project files and document the required deployment configuration instead of pretending that the missing components are functional.
+
+==================================================
+2. APPLICATION DESIGN AND BRANDING
+==================================================
+
+Application name: EventSphere
+
+Create a modern, professional, premium-quality event ticket booking platform.
+
+Design inspiration:
+- Modern event discovery platforms
+- Clean SaaS dashboards
+- Professional ticket booking websites
+
+Visual design:
+- Light background
+- Dark navy typography
+- Purple and indigo accent colors
+- Subtle gradients
+- Rounded cards
+- Soft shadows
+- Clear typography
+- Consistent spacing
+- High-quality event cards
+- Professional charts
+- Responsive layouts
+- Accessible forms and buttons
+
+The application must look polished on desktop, tablet, and mobile devices.
+
+Include:
+- Responsive navigation
+- Loading indicators
+- Skeleton loaders
+- Toast notifications
+- Empty states
+- Confirmation dialogs
+- Error messages
+- Form validation
+- Pagination
+- Search and filtering
+- Accessible keyboard navigation
+
+Avoid:
+- Broken buttons
+- Placeholder links
+- Empty pages
+- Fake functionality
+- Excessive animations
+- Unnecessary decorative elements
+
+Every visible interactive element must perform its intended action.
+
+==================================================
+3. MULTI-TENANT ARCHITECTURE
+==================================================
+
+Implement a multi-tenant architecture in which organizers manage their own events and business data.
+
+Use an organizer or tenant ownership model.
+
+An organizer can:
+- Create events.
+- Update their own events.
+- Publish or unpublish their own events.
+- Configure ticket categories.
+- View reservations and orders for their own events.
+- View revenue and conversion analytics for their own events.
+
+An organizer must never access, modify, or delete another organizer's private events, orders, reservations, or analytics.
+
+Enforce tenant isolation on the server for every relevant API endpoint.
+
+Never trust an organizer ID or role sent by the frontend. Derive identity and permissions from the authenticated server-side user.
+
+Use database constraints and authorization checks wherever appropriate.
+
+==================================================
+4. USER ROLES AND AUTHENTICATION
+==================================================
+
+Implement three roles:
+
+ADMIN:
+- Access the administration dashboard.
+- View platform-wide statistics.
+- Manage users and organizer accounts.
+- View and moderate events.
+- Suspend or reactivate users.
+- Review platform-wide orders and transactions.
+- View audit logs.
+- Perform administrative actions with proper authorization.
+
+ORGANIZER:
+- Access the organizer dashboard.
+- Create and manage events.
+- Manage ticket categories and inventory.
+- View event reservations and orders.
+- View revenue analytics.
+- View ticket sales and conversion rates.
+
+ATTENDEE:
+- Browse published events.
+- Search and filter events.
+- View event details.
+- Select ticket categories and quantities.
+- Reserve tickets temporarily.
+- Complete simulated checkout.
+- View booking confirmation.
+- View booking history.
+- View reservation expiration status.
+
+Authentication pages:
+- Register
+- Login
+- Logout
+- Forgot password interface
+- Reset password flow when a configured email service is available
+- Unauthorized access page
+
+Security requirements:
+- Hash passwords securely.
+- Never store plaintext passwords.
+- Validate email addresses.
+- Enforce unique email addresses.
+- Validate all incoming requests.
+- Protect against privilege escalation.
+- Apply rate limiting to authentication and payment endpoints.
+- Prevent insecure direct object references.
+- Verify authorization on the server for every protected operation.
+
+Public registration must not allow users to register themselves as administrators.
+
+Create a documented, secure way to provision the first administrator.
+
+==================================================
+5. PUBLIC EVENT DISCOVERY
+==================================================
+
+Create an attractive public homepage.
+
+Include:
+- Hero section with a clear headline.
+- Event search bar.
+- Featured events.
+- Upcoming events.
+- Event categories.
+- Popular events.
+- Event location filters.
+- Date filters.
+- Ticket price filters.
+- Event cards with images.
+- Footer with navigation and contact information.
+
+Create these pages:
+
+/
+Homepage
+
+/events
+Event discovery and filtering
+
+/events/:id
+Event details and ticket selection
+
+/login
+Login page
+
+/register
+Registration page
+
+/my-bookings
+Attendee booking history
+
+/checkout/:reservationId
+Reservation checkout
+
+/booking-confirmation/:orderId
+Booking confirmation
+
+Use real data from the backend. Display a professional empty state when no events exist.
+
+Do not expose unpublished or deleted events to public users.
+
+==================================================
+6. EVENT MANAGEMENT
+==================================================
+
+Organizers must be able to create and manage events.
+
+Event fields:
+- Event title
+- Slug
+- Description
+- Category
+- Venue
+- City
+- Full address
+- Start date and time
+- End date and time
+- Time zone
+- Event image URL
+- Publication status
+- Sales start time
+- Sales cutoff time
+- Organizer ID
+- Created timestamp
+- Updated timestamp
+
+Event statuses:
+- DRAFT
+- PUBLISHED
+- CANCELLED
+- COMPLETED
+
+Requirements:
+- Validate event dates.
+- Validate sales windows.
+- Prevent ticket sales after the sales cutoff.
+- Prevent sales before the sales start time.
+- Prevent bookings for cancelled events.
+- Prevent unauthorized organizers from modifying events they do not own.
+- Allow event updates only according to the event's lifecycle and business rules.
+- Invalidate relevant Redis cache entries when event data changes.
+
+Create a polished event creation and editing interface with client-side validation and server-side validation.
+
+==================================================
+7. TICKET CATEGORY MANAGEMENT
+==================================================
+
+Each event can have multiple ticket categories.
+
+Examples:
+- VIP
+- Premium
+- General Admission
+- Early Bird
+- Student Pass
+
+Ticket category fields:
+- ID
+- Event ID
+- Name
+- Description
+- Price
+- Currency
+- Total quantity
+- Sold quantity or equivalent inventory tracking
+- Held quantity or equivalent inventory tracking
+- Sales start time
+- Sales cutoff time
+- Per-user purchase limit
+- Created timestamp
+- Updated timestamp
+
+Requirements:
+- Organizers can create, edit, and deactivate ticket categories.
+- Ticket prices must be nonnegative.
+- Quantities must be valid integers.
+- Inventory must never become negative.
+- Ticket quantities cannot be reduced below the number already sold or otherwise committed.
+- Prevent sales after the applicable deadline.
+- Support multiple ticket categories for one event.
+- Show the current availability accurately.
+- Store money using integer minor units or PostgreSQL DECIMAL, never JavaScript floating-point arithmetic for financial calculations.
+
+Use INR as the default display currency, but structure the application so that currency can be configured.
+
+For the initial implementation, sell general admission tickets by category and quantity. Structure the data model so reserved seating with unique seat assignments can be added later without allowing duplicate seat assignments.
+
+==================================================
+8. CRITICAL REQUIREMENT: CONCURRENCY-SAFE RESERVATION ENGINE
+==================================================
+
+This is the most important feature.
+
+Implement a real reservation engine that prevents overselling when many attendees attempt to reserve tickets simultaneously.
+
+A reservation must expire exactly 10 minutes after its creation.
+
+Reservation statuses:
+- ACTIVE
+- CHECKOUT_PENDING
+- CONFIRMED
+- EXPIRED
+- CANCELLED
+- PAYMENT_FAILED
+
+Implement the following workflow:
+
+STEP 1:
+An authenticated attendee selects an event, ticket category, and quantity.
+
+STEP 2:
+The backend validates:
+- Event publication status.
+- Sales start and cutoff dates.
+- Ticket category status.
+- Requested quantity.
+- Per-user purchase limit.
+- Remaining ticket inventory.
+- Existing active reservations when enforcing purchase limits.
+
+STEP 3:
+The backend starts a PostgreSQL transaction.
+
+STEP 4:
+Use PostgreSQL row-level locking with SELECT FOR UPDATE, or an equivalent atomic conditional inventory update.
+
+Lock the appropriate ticket inventory rows in a consistent order when multiple ticket categories are involved.
+
+STEP 5:
+Recheck the available inventory inside the transaction.
+
+STEP 6:
+Atomically allocate the requested quantity and create the reservation and reservation-item records.
+
+STEP 7:
+Set expires_at to the database transaction's current time plus 10 minutes.
+
+STEP 8:
+Commit the transaction.
+
+STEP 9:
+Return the reservation ID, expiration timestamp, reserved ticket details, and checkout information.
+
+If inventory is insufficient, roll back the transaction and return HTTP 409 Conflict.
+
+The system must never allow two simultaneous requests to reserve the same remaining inventory.
+
+IMPORTANT:
+- Do not implement a check-then-update workflow without atomic protection.
+- Do not depend on frontend checks.
+- Do not rely solely on Redis locks for correctness.
+- PostgreSQL must remain the authoritative source of ticket inventory.
+- Use consistent locking order to reduce deadlocks.
+- Use idempotency keys for reservation and payment requests where appropriate.
+- Ensure transaction rollback restores inventory correctly.
+- Use database constraints to protect critical invariants.
+
+Choose one consistent inventory model and document it clearly.
+
+If using explicit inventory counters, define and maintain the following invariant:
+
+available_quantity + held_quantity + sold_quantity = total_quantity
+
+Every inventory transition must update the relevant counters atomically.
+
+Required transitions:
+
+Available -> Held:
+When a reservation is created.
+
+Held -> Sold:
+When payment is successfully confirmed.
+
+Held -> Available:
+When a reservation expires, is cancelled, or payment permanently fails.
+
+Do not release inventory belonging to a confirmed order.
+
+Handle multiple ticket categories within a single reservation transaction.
+
+==================================================
+9. TEN-MINUTE RESERVATION TIMER
+==================================================
+
+Display a visible countdown timer on the reservation and checkout pages.
+
+Example:
+09:59 remaining
+
+The frontend countdown is informational only. The backend database timestamp determines whether the reservation is valid.
+
+Requirements:
+- Start the reservation expiration window when the reservation is successfully committed.
+- Store expires_at in the database.
+- Use server-side time for all expiration decisions.
+- Reject checkout attempts for expired reservations.
+- Automatically release expired inventory.
+- Make expiration processing safe to run more than once.
+- Prevent duplicate inventory releases.
+- Never expire confirmed reservations.
+
+When a user returns to checkout, retrieve the actual reservation status and expiration timestamp from the server.
+
+If the reservation has expired:
+- Disable checkout.
+- Display a clear expiration message.
+- Update availability.
+- Offer a way to start a new reservation.
+
+==================================================
+10. BACKGROUND JOB PROCESSING
+==================================================
+
+Implement a background worker to release expired reservations.
+
+Preferred implementation:
+- Redis
+- BullMQ
+- A separate Node.js worker process
+- Periodic scheduled cleanup as a recovery mechanism
+
+The worker must:
+1. Find ACTIVE or otherwise eligible expired reservations.
+2. Claim them safely to avoid duplicate processing.
+3. Start a database transaction.
+4. Lock the reservation and related inventory records.
+5. Recheck the reservation status and expiration time.
+6. Mark the reservation EXPIRED.
+7. Release the held inventory.
+8. Commit the transaction.
+
+The process must be idempotent.
+
+If the worker crashes, the job should be retried safely.
+
+Add structured logs and error handling.
+
+Do not rely only on an in-memory setTimeout because it will not reliably survive server restarts or multiple server instances.
+
+Provide a periodic database cleanup or reconciliation task so missed jobs can be recovered.
+
+==================================================
+11. SIMULATED ASYNCHRONOUS PAYMENT GATEWAY
+==================================================
+
+Implement a mock payment gateway.
+
+This is a simulation and must not collect real card details or initiate real financial transactions.
+
+Payment statuses:
+- PENDING
+- PROCESSING
+- SUCCEEDED
+- FAILED
+
+Order statuses:
+- PENDING
+- CONFIRMED
+- FAILED
+- CANCELLED
+
+Payment workflow:
+
+STEP 1:
+The attendee opens checkout for an active reservation.
+
+STEP 2:
+The backend verifies the reservation belongs to the authenticated attendee.
+
+STEP 3:
+The backend checks the reservation expiration time and status.
+
+STEP 4:
+Create an order with a stable, server-calculated total.
+
+STEP 5:
+Create a payment record with status PENDING.
+
+STEP 6:
+Return a payment reference and processing status.
+
+STEP 7:
+A background job or asynchronous mock-gateway process determines the payment outcome.
+
+STEP 8:
+For successful payment, atomically:
+- Lock the order, reservation, and required inventory records.
+- Verify the reservation is still eligible for confirmation.
+- Confirm the order.
+- Mark the reservation CONFIRMED.
+- Convert held inventory into sold inventory.
+- Mark the payment SUCCEEDED.
+- Record the successful transaction.
+
+STEP 9:
+For failed payment:
+- Mark the payment FAILED.
+- Update the order appropriately.
+- Release inventory only when the reservation's lifecycle rules allow it.
+- Ensure the inventory is not released twice.
+
+CRITICAL PAYMENT EXPIRATION RULE:
+
+The payment worker and reservation-expiration worker may execute simultaneously.
+
+Design the state transitions and database locking so only one valid transition wins.
+
+Never confirm a reservation after it has expired and its inventory has been released.
+
+If a payment succeeds externally after the reservation has expired, do not silently oversell. Record the late result and implement a clear compensation or manual-review state suitable for the mock gateway.
+
+For the mock gateway:
+- Provide a configurable success probability.
+- Support deterministic success and failure in automated tests.
+- Use artificial processing delays.
+- Simulate asynchronous callbacks.
+- Verify callback authenticity in the application's mock integration.
+- Handle duplicate callbacks idempotently.
+- Prevent duplicate successful orders.
+- Prevent duplicate payment processing.
+
+Never trust a client-submitted price or payment status.
+
+Provide clear payment progress indicators and success or failure messages.
+
+==================================================
+12. ORDER AND TRANSACTION MANAGEMENT
+==================================================
+
+Create a complete order management system.
+
+Each order must contain:
+- Order ID
+- Attendee ID
+- Reservation ID
+- Order status
+- Total amount
+- Currency
+- Created timestamp
+- Updated timestamp
+
+Each order item must contain:
+- Ticket category
+- Ticket name snapshot
+- Unit price snapshot
+- Quantity
+- Subtotal
+
+Each payment transaction must contain:
+- Transaction ID
+- Order ID
+- Payment reference
+- Amount
+- Currency
+- Status
+- Gateway response code
+- Created timestamp
+- Updated timestamp
+
+Use database constraints to prevent duplicate processing of the same payment reference.
+
+Use unique constraints and idempotency records where necessary.
+
+Display booking reference numbers and booking details on the confirmation page.
+
+Attendees can view their booking history.
+
+Organizers can view orders associated with their own events, subject to authorization.
+
+==================================================
+13. REDIS CACHING
+==================================================
+
+Implement Redis caching for frequently requested active event details.
+
+Requirements:
+- Cache published event details.
+- Cache event lists and relevant public event metadata.
+- Use a configurable TTL.
+- Use clear cache key conventions.
+- Invalidate cache after event creation, updates, publication changes, cancellation, or ticket availability changes where applicable.
+- Avoid serving unpublished events from stale cache entries.
+- Gracefully handle temporary Redis outages.
+- Fall back to PostgreSQL when appropriate.
+- Do not use cached inventory as the authoritative source for booking decisions.
+
+Reservation availability and checkout validation must always use authoritative transactional database operations.
+
+Document cache invalidation behavior.
+
+==================================================
+14. ORGANIZER ANALYTICS DASHBOARD
+==================================================
+
+Create a professional analytics dashboard for organizers.
+
+Display:
+- Total published events.
+- Total tickets sold.
+- Total active reservations.
+- Total completed orders.
+- Gross revenue from successful payments.
+- Failed payment count.
+- Available ticket inventory.
+- Sales conversion rate.
+- Revenue over time.
+- Tickets sold by category.
+- Revenue by event.
+- Booking trends.
+
+Charts:
+- Revenue line chart.
+- Ticket sales bar chart.
+- Ticket category distribution chart.
+- Reservation conversion chart.
+
+Filters:
+- Date range
+- Event
+- Ticket category
+
+Define analytics formulas clearly.
+
+For example:
+
+Ticket conversion rate =
+Confirmed bookings / Eligible unique booking attempts × 100
+
+If reliable booking-attempt data is unavailable, record booking attempts explicitly. Do not fabricate a conversion rate from unrelated counts.
+
+Revenue should include only successfully completed payments and should be adjusted appropriately for any simulated refunds.
+
+Use server-side aggregation queries and tenant-scoped filtering.
+
+Refresh analytics through polling or another practical near-real-time mechanism.
+
+Never expose another organizer's analytics.
+
+==================================================
+15. ADMIN DASHBOARD
+==================================================
+
+Build an administration dashboard containing:
+- Total registered users.
+- Total organizers.
+- Total attendees.
+- Total events.
+- Published and cancelled events.
+- Total successful transactions.
+- Platform revenue.
+- User management table.
+- Organizer management.
+- Event moderation.
+- Audit log viewer.
+
+Provide search, filters, pagination, and confirmation dialogs.
+
+Record sensitive administrative actions in an audit log.
+
+Only authorized administrators can access these endpoints and pages.
+
+==================================================
+16. REQUIRED DATABASE MODELS
+==================================================
+
+Design a normalized PostgreSQL schema using Prisma.
+
+Include these models at minimum:
+
+1. User
+2. Event
+3. TicketType
+4. Reservation
+5. ReservationItem
+6. Order
+7. OrderItem
+8. Payment
+9. IdempotencyKey
+10. AuditLog
+11. BookingAttempt or equivalent analytics event
+
+Include appropriate enums for:
+- UserRole
+- EventStatus
+- ReservationStatus
+- OrderStatus
+- PaymentStatus
+
+Requirements:
+- Primary keys
+- Foreign keys
+- Unique constraints
+- Appropriate indexes
+- Created and updated timestamps
+- Referential integrity
+- Decimal-safe financial values
+- Appropriate delete restrictions
+- Tenant ownership relationships
+
+Avoid deleting historical orders and transactions when a user or event is deactivated.
+
+Store sufficient price snapshots to preserve historical order totals when ticket prices change later.
+
+Use UTC timestamps in the database and convert to the event's configured time zone in the user interface.
+
+Generate:
+- Prisma schema
+- Initial database migration
+- Database seed script
+- Development seed data
+- ER diagram source in Mermaid format
+
+==================================================
+17. ER DIAGRAM
+==================================================
+
+Create a Mermaid ER diagram for:
+
+User
+Event
+TicketType
+Reservation
+ReservationItem
+Order
+OrderItem
+Payment
+IdempotencyKey
+AuditLog
+BookingAttempt
+
+Show all relationships, primary keys, foreign keys, and cardinalities.
+
+Ensure the diagram matches the actual Prisma schema.
+
+Do not create a diagram that contradicts the implemented database model.
+
+==================================================
+18. REST API DESIGN
+==================================================
+
+Implement and document the following endpoints.
+
+AUTHENTICATION:
+POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/logout
+GET /api/auth/me
+
+EVENTS:
+GET /api/events
+GET /api/events/:id
+POST /api/events
+PUT /api/events/:id
+DELETE /api/events/:id
+POST /api/events/:id/publish
+
+TICKET CATEGORIES:
+GET /api/events/:id/tickets
+POST /api/events/:id/tickets
+PUT /api/tickets/:id
+DELETE /api/tickets/:id
+
+RESERVATIONS:
+POST /api/reservations
+GET /api/reservations/:id
+POST /api/reservations/:id/cancel
+
+ORDERS:
+POST /api/orders
+GET /api/orders/:id
+GET /api/orders
+GET /api/attendee/bookings
+
+PAYMENTS:
+POST /api/payments/process
+GET /api/payments/:id/status
+POST /api/payments/mock-callback
+
+ORGANIZER:
+GET /api/organizer/dashboard
+GET /api/organizer/analytics
+GET /api/organizer/events
+GET /api/organizer/orders
+
+ADMIN:
+GET /api/admin/dashboard
+GET /api/admin/users
+PATCH /api/admin/users/:id/status
+GET /api/admin/events
+GET /api/admin/audit-logs
+
+HEALTH:
+GET /api/health
+GET /api/ready
+
+Requirements:
+- Correct HTTP status codes.
+- Consistent JSON response structure.
+- Centralized error handling.
+- Input validation.
+- Authentication middleware.
+- RBAC middleware.
+- Tenant ownership middleware or equivalent scoped authorization.
+- Pagination.
+- Filtering and sorting.
+- Request correlation IDs.
+- Rate limiting.
+- OpenAPI documentation.
+
+Do not expose stack traces, passwords, secret tokens, or internal database errors to clients.
+
+==================================================
+19. POSTMAN COLLECTION
+==================================================
+
+Create an importable Postman collection with organized folders:
+
+1. Authentication
+2. Admin
+3. Organizer
+4. Events
+5. Ticket Categories
+6. Reservations
+7. Orders
+8. Payments
+9. Analytics
+10. Concurrency Tests
+11. Error Cases
+
+Include:
+- Valid registration and login.
+- Invalid login.
+- Unauthorized requests.
+- Role permission failures.
+- Cross-tenant access attempts.
+- Event creation and publishing.
+- Valid ticket reservations.
+- Insufficient inventory.
+- Expired reservation checkout.
+- Successful simulated payment.
+- Failed simulated payment.
+- Duplicate payment callbacks.
+- Duplicate idempotency keys.
+- Invalid request payloads.
+- Concurrent booking attempts.
+
+Save access tokens, IDs, reservation IDs, order IDs, and payment IDs in Postman variables when appropriate.
+
+Include a concurrency test procedure that submits simultaneous reservation requests for the last available tickets.
+
+The test must verify that confirmed ticket quantity never exceeds the configured inventory.
+
+Provide the exported Postman collection JSON file.
+
+==================================================
+20. AUTOMATED TESTING
+==================================================
+
+Write meaningful automated tests for critical business rules.
+
+Unit tests:
+- Inventory calculations.
+- Reservation expiration.
+- Order total calculation.
+- Role permissions.
+- Ticket purchase limits.
+- Payment state transitions.
+
+Integration tests:
+- Authentication.
+- Event CRUD.
+- Reservation creation.
+- Inventory locking.
+- Order creation.
+- Payment success.
+- Payment failure.
+- Expiration cleanup.
+- Tenant isolation.
+- Duplicate callback handling.
+
+Concurrency tests:
+- Many users reserve the same limited inventory.
+- Multiple ticket categories are reserved in one request.
+- Two workers process the same expired reservation.
+- Payment success races with reservation expiration.
+- Duplicate checkout requests arrive simultaneously.
+
+Important test invariant:
+
+For every ticket category:
+
+sold_quantity + held_quantity <= total_quantity
+
+If using a different inventory representation, implement an equivalent invariant.
+
+Also verify that:
+- Inventory never becomes negative.
+- An inventory allocation is never released twice.
+- Confirmed reservations cannot expire.
+- A payment cannot confirm an expired reservation.
+- One idempotent payment operation cannot create duplicate confirmed orders.
+
+Use a real PostgreSQL test database for transaction and concurrency tests when available. Do not claim that concurrency guarantees have been verified by SQLite-only or mocked database tests.
+
+==================================================
+21. ERROR HANDLING AND SECURITY
+==================================================
+
+Implement:
+- Centralized backend error handling.
+- Request payload validation.
+- SQL injection protection through parameterized ORM operations.
+- XSS protection.
+- CSRF protection when using cookie-based authentication.
+- Appropriate CORS configuration.
+- Security headers.
+- Rate limiting.
+- Secure cookie settings.
+- Environment-based configuration.
+- Server-side authorization.
+- Tenant isolation.
+- Safe file and image handling.
+- Audit logging.
+- Graceful shutdown.
+- Structured application logs.
+
+Use generic client-facing errors and appropriate server-side diagnostic logs.
+
+Do not hardcode production secrets.
+
+Create a .env.example file containing placeholders for required configuration variables.
+
+Never commit real credentials.
+
+==================================================
+22. PROJECT STRUCTURE
+==================================================
+
+Organize the codebase clearly.
+
+Suggested structure:
+
+eventsphere/
+  client/
+    src/
+      components/
+      layouts/
+      pages/
+      hooks/
+      services/
+      types/
+      utils/
+  server/
+    src/
+      config/
+      middleware/
+      routes/
+      controllers/
+      services/
+      repositories/
+      workers/
+      jobs/
+      validators/
+      utils/
+      app.ts
+      server.ts
+    prisma/
+      schema.prisma
+      migrations/
+      seed.ts
+    tests/
+  docs/
+    er-diagram.mmd
+    api-documentation.md
+    architecture.md
+    postman-collection.json
+  .env.example
+  docker-compose.yml
+  package.json
+  README.md
+
+You may adjust this structure to fit the generated environment, but preserve clear separation between frontend, backend, database, and background worker responsibilities.
+
+==================================================
+23. REQUIRED UI PAGES
+==================================================
+
+Create all these pages:
+
+PUBLIC:
+- Homepage
+- Event listing
+- Event details
+- Login
+- Registration
+- Unauthorized page
+- Not found page
+
+ATTENDEE:
+- Attendee dashboard
+- My bookings
+- Reservation details
+- Checkout
+- Payment processing
+- Booking confirmation
+- Booking failure
+
+ORGANIZER:
+- Organizer dashboard
+- Create event
+- Edit event
+- Manage ticket categories
+- Manage event inventory
+- View reservations
+- View orders
+- Revenue analytics
+- Sales reports
+- Organizer profile
+
+ADMIN:
+- Admin dashboard
+- User management
+- Organizer management
+- Event moderation
+- Transaction overview
+- Audit logs
+
+Create consistent layouts and navigation for each role.
+
+Hide navigation items the current role cannot access, but enforce all permissions on the server as well.
+
+==================================================
+24. SEED DATA AND DEMO EXPERIENCE
+==================================================
+
+Create realistic development seed data.
+
+Include:
+- One administrator account.
+- At least two organizers.
+- Several attendees.
+- Multiple published events.
+- Multiple unpublished events.
+- Several ticket categories per event.
+- Different ticket prices and quantities.
+- Sample reservations.
+- Sample successful and failed payments.
+- Sample historical orders.
+
+Create clearly documented development credentials for seeded users.
+
+Only seed test credentials in development mode.
+
+Never create publicly accessible default administrator credentials in production.
+
+The application must work with seeded database records rather than hardcoded frontend event arrays.
+
+==================================================
+25. DEPLOYMENT AND DOCUMENTATION
+==================================================
+
+Prepare the application for deployment.
+
+Include:
+- README.md
+- Installation instructions
+- Prerequisites
+- Environment variable documentation
+- PostgreSQL setup
+- Redis setup
+- Database migration commands
+- Seed commands
+- Development commands
+- Production build commands
+- Background worker commands
+- Test commands
+- Deployment instructions
+- Troubleshooting guide
+- API documentation
+- Architecture explanation
+- ER diagram
+
+Provide Docker Compose configuration for local PostgreSQL and Redis services where appropriate.
+
+Document deployment of:
+- React frontend
+- Node.js API
+- PostgreSQL database
+- Redis service
+- Background worker
+
+Explain how to configure environment variables and run database migrations in production.
+
+Do not invent a deployed application URL.
+
+The deployment is complete only after the application is actually deployed and its health endpoints have been verified.
+
+==================================================
+26. IMPLEMENTATION ORDER
+==================================================
+
+Build the project in this order:
+
+PHASE 1:
+Inspect the available environment, initialize the application, and establish the project structure.
+
+PHASE 2:
+Implement PostgreSQL schema, Prisma models, migrations, and seed data.
+
+PHASE 3:
+Implement authentication, session management, RBAC, and tenant isolation.
+
+PHASE 4:
+Implement event and ticket category management.
+
+PHASE 5:
+Implement concurrency-safe reservations using PostgreSQL transactions and row-level locking or equivalent atomic operations.
+
+PHASE 6:
+Implement orders, simulated asynchronous payments, idempotency, and safe state transitions.
+
+PHASE 7:
+Implement Redis caching and the reservation expiration worker.
+
+PHASE 8:
+Build the public event discovery pages and attendee booking experience.
+
+PHASE 9:
+Build organizer and admin dashboards.
+
+PHASE 10:
+Implement analytics, Postman collection, and automated tests.
+
+PHASE 11:
+Add documentation, deployment configuration, and production build verification.
+
+At each phase:
+- Generate the actual source files.
+- Check imports and dependencies.
+- Check TypeScript types.
+- Run available tests.
+- Fix errors before proceeding.
+- Keep the application runnable.
+- Do not replace unfinished functionality with fake success responses.
+
+If you cannot complete all phases in one generation, prioritize the working backend, correct database schema, secure authentication, and concurrency-safe reservation engine. Then continue implementing the remaining phases in order.
+
+==================================================
+27. ACCEPTANCE CRITERIA
+==================================================
+
+The project is considered functionally complete only when:
+
+1. Users can register and log in.
+2. Role-based permissions work.
+3. Organizers can create and manage their own events.
+4. Attendees can browse published events.
+5. Multiple ticket categories are supported.
+6. Attendees can create 10-minute reservations.
+7. PostgreSQL transactions protect ticket inventory.
+8. Concurrent booking attempts cannot oversell inventory.
+9. Reservation expiration releases inventory safely.
+10. Simulated asynchronous payments work.
+11. Duplicate callbacks do not create duplicate successful orders.
+12. Expired reservations cannot be confirmed.
+13. Redis caches public event details.
+14. Background workers process expired reservations.
+15. Organizer analytics use real database records.
+16. Tenant isolation prevents cross-organizer data access.
+17. The admin dashboard is protected.
+18. The Postman collection is importable.
+19. Automated tests cover critical business rules.
+20. The ER diagram matches the actual database schema.
+21. The project has clear setup and deployment documentation.
+22. The frontend and backend build successfully.
+23. All required external services are documented and correctly configured.
+24. The application does not claim that unconfigured services or untested functionality are operational.
+
+==================================================
+28. FINAL INSTRUCTIONS
+==================================================
+
+Start building EventSphere now.
+
+First inspect the available project-building environment and determine which files, packages, and server capabilities are supported.
+
+Then create the actual application files.
+
+Do not return only a written explanation or a list of recommendations.
+
+Implement the application incrementally and preserve all generated files between steps.
+
+If you encounter a limitation, explain it and provide the best real implementation possible within the environment.
+
+Prioritize correctness, security, usability, maintainability, and reliable ticket inventory over superficial visual effects.
+
+At the end, provide:
+- A summary of implemented features.
+- The actual project file structure.
+- Instructions to run the application.
+- Required environment variables.
+- Database migration and seed commands.
+- Test execution commands and results.
+- Postman collection location.
+- ER diagram location.
+- Deployment instructions.
+- A clear list of any remaining incomplete features.
+
+Never claim a feature is complete unless its implementation exists and has been verified to the extent supported by the environment.

@@ -1,0 +1,343 @@
+{
+  "info": {
+    "name": "EventSphere API Collection",
+    "_postman_id": "c1f7b8a2-2026-4b89-8d1e-eventsphere001",
+    "description": "Comprehensive Postman test suite for EventSphere — Multi-Tenant Event & Ticket Reservation System.\nIncludes authentication, tenant isolation checks, concurrency test procedure, reservation expiration, and payment simulation.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "adminToken", "value": "", "type": "string" },
+    { "key": "organizerToken", "value": "", "type": "string" },
+    { "key": "attendeeToken", "value": "", "type": "string" },
+    { "key": "eventId", "value": "evt_ai_summit_2026", "type": "string" },
+    { "key": "ticketTypeId", "value": "tkt_ai_standard", "type": "string" },
+    { "key": "reservationId", "value": "", "type": "string" },
+    { "key": "orderId", "value": "", "type": "string" },
+    { "key": "paymentId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Login as Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@eventsphere.com\",\n  \"password\": \"AdminPass123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Login as Organizer (Apex)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"apex.events@eventsphere.com\",\n  \"password\": \"OrganizerPass123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Login as Attendee (Yuvan)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"attendee@eventsphere.com\",\n  \"password\": \"AttendeePass123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Register New Attendee",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Attendee\",\n  \"email\": \"test.attendee@example.com\",\n  \"password\": \"AttendeePass123!\",\n  \"role\": \"ATTENDEE\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+          }
+        },
+        {
+          "name": "Get Current Session (Me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{attendeeToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Admin",
+      "item": [
+        {
+          "name": "Admin Dashboard Metrics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/dashboard", "host": ["{{baseUrl}}"], "path": ["api", "admin", "dashboard"] }
+          }
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/users", "host": ["{{baseUrl}}"], "path": ["api", "admin", "users"] }
+          }
+        },
+        {
+          "name": "Audit Logs Viewer",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/audit-logs", "host": ["{{baseUrl}}"], "path": ["api", "admin", "audit-logs"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Organizer",
+      "item": [
+        {
+          "name": "Organizer Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{organizerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/organizer/dashboard", "host": ["{{baseUrl}}"], "path": ["api", "organizer", "dashboard"] }
+          }
+        },
+        {
+          "name": "Organizer Analytics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{organizerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/organizer/analytics", "host": ["{{baseUrl}}"], "path": ["api", "organizer", "analytics"] }
+          }
+        },
+        {
+          "name": "Organizer My Events",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{organizerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/organizer/events", "host": ["{{baseUrl}}"], "path": ["api", "organizer", "events"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Events",
+      "item": [
+        {
+          "name": "Public Events Catalog (Cached)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/events?category=Technology", "host": ["{{baseUrl}}"], "path": ["api", "events"], "query": [{ "key": "category", "value": "Technology" }] }
+          }
+        },
+        {
+          "name": "Get Event Details",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/events/{{eventId}}", "host": ["{{baseUrl}}"], "path": ["api", "events", "{{eventId}}"] }
+          }
+        },
+        {
+          "name": "Create Event (Organizer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{organizerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Cloud Native DevOps Summit 2026\",\n  \"description\": \"Comprehensive conference covering Kubernetes, GitOps, and platform engineering.\",\n  \"category\": \"Technology\",\n  \"venue\": \"KTPO Exhibition Hall\",\n  \"city\": \"Bengaluru\",\n  \"fullAddress\": \"Whitefield Industrial Area, Bengaluru, Karnataka\",\n  \"startDate\": \"2026-12-10T09:00:00Z\",\n  \"endDate\": \"2026-12-11T18:00:00Z\",\n  \"timeZone\": \"Asia/Kolkata\",\n  \"imageUrl\": \"https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80\",\n  \"salesStartTime\": \"2026-09-01T00:00:00Z\",\n  \"salesCutoffTime\": \"2026-12-09T23:59:59Z\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/events", "host": ["{{baseUrl}}"], "path": ["api", "events"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Ticket Categories",
+      "item": [
+        {
+          "name": "List Tickets for Event",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/events/{{eventId}}/tickets", "host": ["{{baseUrl}}"], "path": ["api", "events", "{{eventId}}", "tickets"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Reservations",
+      "item": [
+        {
+          "name": "Create 10-Minute Hold Reservation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{attendeeToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": \"{{eventId}}\",\n  \"items\": [\n    {\n      \"ticketTypeId\": \"{{ticketTypeId}}\",\n      \"quantity\": 2\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/reservations", "host": ["{{baseUrl}}"], "path": ["api", "reservations"] }
+          }
+        },
+        {
+          "name": "Get Reservation Hold Status & Countdown",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{attendeeToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/reservations/{{reservationId}}", "host": ["{{baseUrl}}"], "path": ["api", "reservations", "{{reservationId}}"] }
+          }
+        },
+        {
+          "name": "Cancel Reservation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{attendeeToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/reservations/{{reservationId}}/cancel", "host": ["{{baseUrl}}"], "path": ["api", "reservations", "{{reservationId}}", "cancel"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Orders",
+      "item": [
+        {
+          "name": "Create Order from Reservation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{attendeeToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservationId\": \"{{reservationId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/orders", "host": ["{{baseUrl}}"], "path": ["api", "orders"] }
+          }
+        },
+        {
+          "name": "Get Attendee Bookings History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{attendeeToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/orders/attendee/bookings", "host": ["{{baseUrl}}"], "path": ["api", "orders", "attendee", "bookings"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Payments",
+      "item": [
+        {
+          "name": "Process Payment (Simulated Gateway)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{attendeeToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"paymentMethod\": \"UPI\",\n  \"forceOutcome\": \"SUCCEEDED\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/payments/process", "host": ["{{baseUrl}}"], "path": ["api", "payments", "process"] }
+          }
+        },
+        {
+          "name": "Check Payment Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{attendeeToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/payments/{{paymentId}}/status", "host": ["{{baseUrl}}"], "path": ["api", "payments", "{{paymentId}}", "status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Analytics",
+      "item": [
+        {
+          "name": "Get Organizer Conversion & Revenue Analytics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{organizerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/organizer/analytics", "host": ["{{baseUrl}}"], "path": ["api", "organizer", "analytics"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Concurrency Tests",
+      "item": [
+        {
+          "name": "Simultaneous Reservation Request 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{attendeeToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": \"{{eventId}}\",\n  \"items\": [{ \"ticketTypeId\": \"tkt_ai_vip\", \"quantity\": 1 }]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/reservations", "host": ["{{baseUrl}}"], "path": ["api", "reservations"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Error Cases",
+      "item": [
+        {
+          "name": "Cross-Tenant Access Attempt (Forbidden)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{organizerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Malicious Cross Tenant Overwrite\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/events/evt_soundwave_goa_2026", "host": ["{{baseUrl}}"], "path": ["api", "events", "evt_soundwave_goa_2026"] }
+          }
+        },
+        {
+          "name": "Self Register as Admin (Forbidden)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Hacker\",\n  \"email\": \"hacker@example.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "EventSphere",
+  "description": "Multi-Tenant Event & Ticket Reservation System with concurrency-safe booking engine and real-time analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,156 @@
+erDiagram
+    User ||--o{ Event : "organizes"
+    User ||--o{ Reservation : "makes"
+    User ||--o{ Order : "places"
+    User ||--o{ AuditLog : "triggers"
+    
+    Event ||--|{ TicketType : "defines"
+    Event ||--o{ Reservation : "has"
+    Event ||--o{ Order : "records"
+    Event ||--o{ BookingAttempt : "tracks"
+    
+    TicketType ||--o{ ReservationItem : "allocated_in"
+    TicketType ||--o{ OrderItem : "purchased_in"
+    
+    Reservation ||--|{ ReservationItem : "contains"
+    Reservation ||--o| Order : "converted_to"
+    
+    Order ||--|{ OrderItem : "contains"
+    Order ||--o{ Payment : "settled_via"
+
+    User {
+        string id PK
+        string email UK
+        string name
+        string passwordHash
+        string role "ADMIN | ORGANIZER | ATTENDEE"
+        string status "ACTIVE | SUSPENDED"
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Event {
+        string id PK
+        string title
+        string slug UK
+        string description
+        string category
+        string venue
+        string city
+        string fullAddress
+        datetime startDate
+        datetime endDate
+        string timeZone
+        string imageUrl
+        string status "DRAFT | PUBLISHED | CANCELLED | COMPLETED"
+        datetime salesStartTime
+        datetime salesCutoffTime
+        string organizerId FK
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    TicketType {
+        string id PK
+        string eventId FK
+        string name
+        string description
+        decimal price
+        string currency
+        int totalQuantity
+        int soldQuantity
+        int heldQuantity
+        datetime salesStartTime
+        datetime salesCutoffTime
+        int purchaseLimit
+        boolean isActive
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Reservation {
+        string id PK
+        string eventId FK
+        string userId FK
+        string status "ACTIVE | CHECKOUT_PENDING | CONFIRMED | EXPIRED | CANCELLED | PAYMENT_FAILED"
+        datetime expiresAt
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    ReservationItem {
+        string id PK
+        string reservationId FK
+        string ticketTypeId FK
+        int quantity
+        decimal unitPrice
+        datetime createdAt
+    }
+
+    Order {
+        string id PK
+        string orderNumber UK
+        string attendeeId FK
+        string reservationId FK
+        string eventId FK
+        string status "PENDING | CONFIRMED | FAILED | CANCELLED"
+        decimal totalAmount
+        string currency
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    OrderItem {
+        string id PK
+        string orderId FK
+        string ticketTypeId FK
+        string ticketNameSnapshot
+        decimal unitPriceSnapshot
+        int quantity
+        decimal subtotal
+        datetime createdAt
+    }
+
+    Payment {
+        string id PK
+        string orderId FK
+        string paymentReference UK
+        decimal amount
+        string currency
+        string status "PENDING | PROCESSING | SUCCEEDED | FAILED"
+        string gatewayResponseCode
+        string idempotencyKey UK
+        string failureReason
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    IdempotencyKey {
+        string id PK
+        string key UK
+        string userId
+        string requestPath
+        int responseStatus
+        string responseBody
+        datetime createdAt
+        datetime expiresAt
+    }
+
+    AuditLog {
+        string id PK
+        string userId FK
+        string action
+        string resourceType
+        string resourceId
+        string details
+        string ipAddress
+        datetime createdAt
+    }
+
+    BookingAttempt {
+        string id PK
+        string eventId FK
+        string userId
+        string status "INITIATED | RESERVED | FAILED_OUT_OF_STOCK | FAILED_LIMIT_EXCEEDED | CONFIRMED | EXPIRED"
+        datetime timestamp
+    }
